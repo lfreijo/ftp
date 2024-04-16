@@ -149,16 +149,17 @@ func Dial(addr string, options ...DialOption) (*ServerConn, error) {
 		return nil, err
 	}
 
-	// Use the resolved IP address in case addr contains a domain name
-	// If we use the domain name, we might not resolve to the same IP.
-	remoteAddr := tconn.RemoteAddr().(*net.TCPAddr)
+	host,_,err := net.SplitHostPort(addr)
+	if err != nil {
+		return nil, err
+	}
 
 	c := &ServerConn{
 		options:  do,
 		features: make(map[string]string),
 		conn:     textproto.NewConn(do.wrapConn(tconn)),
 		netConn:  tconn,
-		host:     remoteAddr.IP.String(),
+		host:     host,
 	}
 
 	_, _, err = c.conn.ReadResponse(StatusReady)
